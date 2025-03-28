@@ -1,21 +1,23 @@
+from select import select
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app import crud, schemas
 from app.database import get_db
+from app.models import City
+from app.schemas import CityOut, CityCreate
 
 router = APIRouter()
 
-@router.post("/cities", response_model=schemas.CityResponse)
-async def create_city(city: schemas.CityCreate, db: AsyncSession = Depends(get_db)):
-    return await crud.create_city(db, city.name, city.additional_info)
-
-@router.get("/cities", response_model=list[schemas.CityResponse])
+@router.get("/cities", response_model=list[CityOut])
 async def get_cities(db: AsyncSession = Depends(get_db)):
-    return await crud.get_cities(db)
+    result = await db.execute(select(City))
+    cities = result.scalars().all()
+    return cities
 
-@router.delete("/cities/{city_id}")
-async def delete_city(city_id: int, db: AsyncSession = Depends(get_db)):
-    if await crud.delete_city(db, city_id):
-        return {"message": "City deleted"}
-    return {"error": "City not found"}
+@router.post("/cities", response_model=CityOut)
+async def create_city(city: CityCreate, db: AsyncSession = Depends(get_db)):
+    new_city = City(name=city.name, additional_info=city.additional_info)
+    db.add(new_city)
+    await db.commit()
+    await db.refresh(new_city)
+    return new_city

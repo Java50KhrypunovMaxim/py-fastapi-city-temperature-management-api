@@ -4,6 +4,7 @@ import datetime
 
 Base = declarative_base()
 
+
 class City(Base):
     __tablename__ = "cities"
 
@@ -12,6 +13,7 @@ class City(Base):
     additional_info = Column(String, nullable=True)
 
     temperatures = relationship("Temperature", back_populates="city")
+
 
 class Temperature(Base):
     __tablename__ = "temperatures"

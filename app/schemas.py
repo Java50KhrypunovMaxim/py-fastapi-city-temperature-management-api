@@ -1,24 +1,45 @@
 from pydantic import BaseModel
+from typing import Optional, List
 from datetime import datetime
-from typing import Optional
 
-class CityCreate(BaseModel):
+
+class CityBase(BaseModel):
     name: str
     additional_info: Optional[str] = None
 
-class CityResponse(CityCreate):
+    class Config:
+        orm_mode = True
+
+
+class CityCreate(CityBase):
+    pass
+
+
+class CityOut(CityBase):
     id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
-class TemperatureCreate(BaseModel):
-    city_id: int
+
+class TemperatureBase(BaseModel):
+    date_time: datetime
     temperature: float
 
-class TemperatureResponse(TemperatureCreate):
+    class Config:
+        orm_mode = True
+
+
+class TemperatureCreate(TemperatureBase):
+    pass
+
+
+class TemperatureOut(TemperatureBase):
     id: int
-    date_time: datetime
+    city_id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
+
+class TemperatureList(BaseModel):
+    temperatures: List[TemperatureOut]

@@ -1,16 +1,27 @@
+# app/api/temperature_routes.py
+from select import select
+
 import httpx
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app import crud, schemas
 from app.database import get_db
-
+from app.models import Temperature
+from app.schemas import TemperatureOut
+from app import crud
 
 router = APIRouter()
 
-@router.get("/temperatures", response_model=list[schemas.TemperatureResponse])
-async def get_temperatures(city_id: int = None, db: AsyncSession = Depends(get_db)):
-    return await crud.get_temperatures(db, city_id)
+@router.get("/temperatures", response_model=list[TemperatureOut])
+async def get_temperatures(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Temperature))
+    temperatures = result.scalars().all()
+    return temperatures
+
+@router.get("/temperatures/{city_id}", response_model=list[TemperatureOut])
+async def get_temperatures_by_city(city_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Temperature).filter(Temperature.city_id == city_id))
+    temperatures = result.scalars().all()
+    return temperatures
 
 @router.post("/temperatures/update")
 async def update_temperatures(db: AsyncSession = Depends(get_db)):

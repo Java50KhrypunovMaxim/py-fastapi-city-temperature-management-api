@@ -1,6 +1,7 @@
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import City, Temperature
 
 
 async def create_city(db: AsyncSession, name: str, additional_info: str):
